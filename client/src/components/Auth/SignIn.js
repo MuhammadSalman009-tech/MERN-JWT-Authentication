@@ -5,7 +5,7 @@ import Input from './Input';
 import useStyles from "./styles";
 import GoogleLogin from "react-google-login";
 import { useDispatch } from 'react-redux';
-import {signin} from "../Redux/Actions/authActions";
+import axios from "axios";
 
 const initialState={email:'', password:''}
 function AuthForm() {
@@ -30,9 +30,40 @@ function AuthForm() {
         console.log(error)
     }
 
-    const handleSubmit=(e)=>{
+    const handleSubmit=async(e)=>{
+        //getting targeted error elements 
+        const emailErr=document.querySelector(".email");
+        const passwordErr=document.querySelector(".password");
+        const notVerified=document.querySelector(".notVerified");
+
+        //seeting input errors to null on submit
+        emailErr.innerHTML='';
+        passwordErr.innerHTML='';
+        notVerified.innerHTML='';
+
         e.preventDefault();
-        dispatch(signin(formData,history))
+        try {
+            const res=await axios.post('/user/signin',formData);
+            console.log(res);
+            const data=res.data;
+            if(data.token && data.result){
+                dispatch({type:"AUTH",payload:{result:data.result,token:data.token}});
+                history.push("/");
+            }
+        } catch (error) {
+            console.log(error)
+            const msg=error.response.data;
+            //seeting input errors to null on submit
+            if(msg.emailErr){
+                emailErr.innerHTML=msg.emailErr;
+            }
+            if(msg.passwordErr){
+                passwordErr.innerHTML=msg.passwordErr;
+            }
+            if(msg.notVerified){
+                notVerified.innerHTML=msg.notVerified;
+            }
+        }
         
     }
     const handleChange=(e)=>{
@@ -44,7 +75,7 @@ function AuthForm() {
             <Paper className={classes.authPaper} elevation={3} >
                 <form onSubmit={handleSubmit}>
                     <Grid container spacing={2}>
-                        <span className={`emailVerified ${classes.error}`}></span>
+                        <span className={`notVerified ${classes.error}`}></span>
                         <Input name="email" label="Email Address" handleChange={handleChange} type="email"/>
                         <span className={`email ${classes.error}`}></span>
                         <Input 

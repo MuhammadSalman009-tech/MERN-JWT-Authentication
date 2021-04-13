@@ -7,6 +7,7 @@ import Home from "./components/Views/Home";
 import CheckOut from "./components/Views/CheckOut";
 import {Provider} from "react-redux";
 import { configureStore } from "./components/Redux/configureStore";
+import EmailVerification from "./components/Auth/EmailVerification";
 
 const store=configureStore();
 function App() {
@@ -16,6 +17,7 @@ function App() {
           <Navbar/>
           <Switch>
             <Route exact path="/" component={()=><Home />}/>
+            <Route exact path="/email-verification" component={()=><EmailVerification />}/>
             <Route exact path="/checkout" component={()=><CheckOut />}/>
             <Route exact path="/signin" component={()=><SignIn />}/>
             <Route exact path="/signup" component={()=><SignUP />}/>

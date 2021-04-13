@@ -1,25 +1,24 @@
 import { Button, Container, Paper, Grid } from '@material-ui/core';
 import React, { useState } from 'react'
-import { Link, useHistory} from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import Input from './Input';
 import useStyles from "./styles";
-import { useDispatch } from 'react-redux';
-import {signup} from "../Redux/Actions/authActions";
+import axios from "axios";
 
 const initialState={firstName:'', lastName:'', email:'', password:''};
 function SignUp() {
     const classes=useStyles();
     const [showPassword,setShowPassword]=useState(false);
     const [formData,setFormData]=useState(initialState);
-    const dispatch=useDispatch();
-    const history=useHistory();
     
     const handleSubmit=async(e)=>{
+        //getting targeted error elements
         const firstNameErr=document.querySelector(".firstName");
         const lastNameErr=document.querySelector(".lastName");
         const emailErr=document.querySelector(".email");
         const passwordErr=document.querySelector(".password");
-        const verificationText=document.querySelector(".verificationText");
+        const emailSucces=document.querySelector(".emailSucces");
+        const emailFailure=document.querySelector(".emailFailure");
         e.preventDefault();
 
         //seeting input errors to null on submit
@@ -27,8 +26,36 @@ function SignUp() {
         lastNameErr.innerHTML='';
         emailErr.innerHTML='';
         passwordErr.innerHTML='';
-        verificationText.innerHTML='';
-        dispatch(signup(formData,history))
+        emailFailure.innerHTML='';
+        emailSucces.innerHTML='';
+        try {
+            const res=await axios.post('/user/signup',formData);
+            console.log(res);
+            if(res.data.emailSuccess){
+                emailSucces.innerHTML=res.data.emailSuccess;
+            }
+            if(res.data.emailFailure){
+                emailFailure.innerHTML=res.data.emailFailure;
+            }
+            // dispatch({type:"AUTH",payload:{result:res.data.result,token:res.data.token}});
+            // history.push("/");
+        } catch (error) {
+            console.log(error)
+            const msg=error.response.data;
+            //seeting input errors to null on submit
+            if(msg.firstNameErr){
+                firstNameErr.innerHTML=msg.firstNameErr;
+            }
+            if(msg.lastNameErr){
+                lastNameErr.innerHTML=msg.lastNameErr;
+            }
+            if(msg.emailErr){
+                emailErr.innerHTML=msg.emailErr;
+            }
+            if(msg.passwordErr){
+                passwordErr.innerHTML=msg.passwordErr;
+            }
+        }
     }
     const handleChange=(e)=>{
         setFormData({...formData,[e.target.name]:e.target.value});
@@ -39,7 +66,8 @@ function SignUp() {
             <Paper className={classes.authPaper} elevation={3}>
                 <form onSubmit={handleSubmit}>
                     <Grid container spacing={2}>
-                        <span className={`verificationText ${classes.success}`}></span>
+                        <span className={`emailSucces ${classes.success}`}></span>
+                        <span className={`emailFailure ${classes.error}`}></span>
                         <Input name="firstName" label="First Name" handleChange={handleChange} autoFocus/>
                         <span className={`firstName ${classes.error}`}></span>
                         <Input name="lastName" label="Last Name" handleChange={handleChange}/>

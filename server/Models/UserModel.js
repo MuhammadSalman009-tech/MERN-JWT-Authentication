@@ -16,9 +16,13 @@ const userSchema=new mongoose.Schema({
         type:String,
         required:true
     },
-    id:{
-        type:String
-    }
+    isVerified:{
+        type:Boolean,
+        default:false
+    },
+    activationToken:{
+        type:String,
+    },
 });
 
 
